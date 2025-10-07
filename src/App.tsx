@@ -13,7 +13,7 @@ import { formattedSeconds } from './utils/utils'
 import { Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 
-var genAI: any | GoogleGenerativeAI = null
+var genAI: GoogleGenerativeAI | null = null
 
 const getGeminiApiKey = async () : Promise<string | never> => {
     const res = await fetch("/api/gemini")
@@ -40,20 +40,23 @@ function App(): React.ReactElement {
   const [translationCount, setTranslationCount] = useState<number>(0)
   const [elapsedSec, setElapsedSec] = useState<number>(0)
   const [timerSt, setTimerSt] = useState<'play' | 'stop'>('stop')
+  const [isAIReady, setIsAIReady] = useState<boolean>(false)
 
   useEffect(() => {
     if (import.meta.env.VITE_ENV === 'development') {
       genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY!)
       setTimeout(() => setIsGameLoading(false), 4000)
+      setIsAIReady(true)
     } else {
       getGeminiApiKey().then(key => {
-        console.log('Gemini API Key fetched successfully', key)
         genAI = new GoogleGenerativeAI(key)
         setIsGameLoading(false)
+        setIsAIReady(true)
       }).catch(err => {
         console.error('Gemini API Key fetch error:', err)
         alert('The game is currently unavailable. Please try again later.')
         setIsGameLoading(false)
+        setIsAIReady(false)
         process.exit(1)
       })
     }
@@ -61,8 +64,10 @@ function App(): React.ReactElement {
   
   // Generate initial text when component mounts or language changes
   useEffect(() => {
-    generateSourceText()
-  }, [sourceLanguage])
+    if (isAIReady) {
+      generateSourceText()
+    }
+  }, [sourceLanguage, isAIReady])
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
@@ -90,7 +95,7 @@ function App(): React.ReactElement {
     setIsGeneratingText(true)
     
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const model = genAI!.getGenerativeModel({ model: 'gemini-2.5-flash' })
       
       const languageName = sourceLanguage.nativeName
       const languageCode = sourceLanguage.code
@@ -105,7 +110,7 @@ function App(): React.ReactElement {
       `
       
       const result = await model.generateContent(prompt)
-      const response = await result.response
+      const response = result.response
       const text = response.text()
       const finalText = text.trim()
       
@@ -133,7 +138,7 @@ function App(): React.ReactElement {
     setTimerSt('stop')
     
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const model = genAI!.getGenerativeModel({ model: 'gemini-2.5-flash' })
       
       const prompt = `
         Read the following text in ${sourceLanguage.nativeName} (${sourceLanguage.code}):
