@@ -43,7 +43,7 @@ function App(): React.ReactElement {
 
   useEffect(() => {
     if (import.meta.env.VITE_ENV === 'development') {
-      genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY!)
+      genAI = new GoogleGenerativeAI(import.meta.env.GEMINI_API_KEY!)
       setTimeout(() => setIsGameLoading(false), 4000)
     } else {
       getGeminiApiKey().then(key => {
