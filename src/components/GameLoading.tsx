@@ -1,5 +1,6 @@
 import clsx from "clsx"
 import { AnimatePresence, motion, useCycle } from "motion/react"
+import TranslationLogo from "./TranslationLogo"
 
 const GREETINGS = [
     { lang: 'English', text: 'Welcome' },
@@ -24,28 +25,33 @@ export default function GameLoading() {
 
     return (
         <main className={clsx([
-            'w-screen', 'h-screen', 'overflow-hidden', 'flex', 'flex-col', 'gap-4',
-            'items-center', 'justify-center'
+            'w-screen', 'h-screen', 'overflow-hidden', 'py-12'
         ])}>
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={x.lang}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    onAnimationComplete={() => {
-                        setTimeout(() => cycleX(), 400);
-                    }}
-                    style={{
-                        fontSize: "2rem", fontWeight: "bold", marginBottom: "2rem",
-                        textAlign: "center" 
-                    }}
-                >
-                    {x.text}
-                </motion.div>
-            </AnimatePresence>
-            <ContinuousWavyText text="Loading..." />
+            <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 2.5, ease: "easeInOut" }}
+            >
+                <TranslationLogo />
+            </motion.div>
+            <div className="flex items-center justify-center flex-col gap-20 mt-20">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={x.lang}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        onAnimationComplete={() => {
+                            setTimeout(() => cycleX(), 400);
+                        }}
+                        style={{ fontSize: "2rem", fontWeight: "bold", textAlign: "center" }}
+                    >
+                        {x.text}
+                    </motion.div>
+                </AnimatePresence>
+                <ContinuousWavyText text="Loading..." />
+            </div>
         </main>
     )
 }
@@ -60,17 +66,18 @@ const ContinuousWavyText = ({ text }: { text: string }) => {
                     key={index}
                     style={{
                         display: "inline-block",
-                        fontSize: "2.5rem",
+                        fontSize: "1.5rem",
                         fontWeight: "bold",
                     }}
-                    animate={{
-                        y: [0, -15, 0],
-                    }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{
-                        duration: 1,
                         repeat: Infinity,
+                        duration: 0.25,
                         delay: index * 0.1,
                         ease: "easeInOut",
+                        repeatType: "mirror",
+                        repeatDelay: letters.length * 0.1,
                     }}
                 >
                     {letter === " " ? "\u00A0" : letter}

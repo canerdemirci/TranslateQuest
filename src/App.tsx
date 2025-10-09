@@ -7,23 +7,26 @@ import TargetTextSection from './components/TargetTextSection'
 import AIReviewSection from './components/AIReviewSection'
 import GameLoading from './components/GameLoading'
 import { SUPPORTED_LANGUAGES } from './constants'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { formattedSeconds } from './utils/utils'
-import { Sparkles } from 'lucide-react'
+import { PencilLine, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
+import AIReviewAnimation from './components/AIReviewAnimation'
+
+const minUserTrnsLen = 10
 
 var genAI: GoogleGenerativeAI | null = null
 
-const getGeminiApiKey = async () : Promise<string | never> => {
-    const res = await fetch("/api/gemini")
-    const data = await res.json()
+const getGeminiApiKey = async (): Promise<string | never> => {
+  const res = await fetch("/api/gemini")
+  const data = await res.json()
 
-    if (res.status === 200) {
-      return data.apiKey
-    } else {
-      throw new Error(data.error || "Failed to fetch Gemini API key")
-    }
+  if (res.status === 200) {
+    return data.apiKey
+  } else {
+    throw new Error(data.error || "Failed to fetch Gemini API key")
+  }
 }
 
 function App(): React.ReactElement {
@@ -37,10 +40,14 @@ function App(): React.ReactElement {
   const [showReview, setShowReview] = useState<boolean>(false)
   const [reviewLoading, setReviewLoading] = useState<boolean>(false)
   const [totalScore, setTotalScore] = useState<number>(0)
+  const [adjustedScore, setAdjustedScore] = useState<number>(0)
   const [translationCount, setTranslationCount] = useState<number>(0)
   const [elapsedSec, setElapsedSec] = useState<number>(0)
   const [timerSt, setTimerSt] = useState<'play' | 'stop'>('stop')
   const [isAIReady, setIsAIReady] = useState<boolean>(false)
+  const [reviewAnimationOpen, setReviewAnimationOpen] = useState<boolean>(false)
+
+  const aiReviewRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (import.meta.env.VITE_ENV === 'development') {
@@ -50,7 +57,7 @@ function App(): React.ReactElement {
     } else {
       getGeminiApiKey().then(key => {
         genAI = new GoogleGenerativeAI(key)
-        setIsGameLoading(false)
+        setTimeout(() => setIsGameLoading(false), 4000)
         setIsAIReady(true)
       }).catch(err => {
         console.error('Gemini API Key fetch error:', err)
@@ -61,7 +68,7 @@ function App(): React.ReactElement {
       })
     }
   }, [])
-  
+
   // Generate initial text when component mounts or language changes
   useEffect(() => {
     if (isAIReady) {
@@ -83,7 +90,7 @@ function App(): React.ReactElement {
         interval = null
       }
     }
-    
+
     return () => {
       if (interval) {
         clearInterval(interval)
@@ -91,15 +98,22 @@ function App(): React.ReactElement {
     }
   }, [timerSt])
 
+  // Scroll to AI review when it appears
+  useEffect(() => {
+    if (showReview && aiReviewRef.current) {
+      aiReviewRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [showReview])
+
   const generateSourceText = async (): Promise<void> => {
     setIsGeneratingText(true)
-    
+
     try {
       const model = genAI!.getGenerativeModel({ model: 'gemini-2.5-flash' })
-      
+
       const languageName = sourceLanguage.nativeName
       const languageCode = sourceLanguage.code
-      
+
       const prompt = `
         Create a text in ${languageName} (${languageCode}). The text should have these characteristics:
         - Be 2-4 sentences long
@@ -108,12 +122,12 @@ function App(): React.ReactElement {
         - Be translatable and understandable
         - Only provide the text, no other explanations
       `
-      
+
       const result = await model.generateContent(prompt)
       const response = result.response
       const text = response.text()
       const finalText = text.trim()
-      
+
       setCurrentSourceText(finalText)
       setUserTranslation('')
       setAiReview(null)
@@ -123,23 +137,24 @@ function App(): React.ReactElement {
       alert('Failed to generate source text. Please try again.')
       setCurrentSourceText('')
     }
-    
+
     setIsGeneratingText(false)
     setTimerSt('play')
   }
 
   const handleSubmitTranslation = async (): Promise<void> => {
-    if (userTranslation.trim().length < 10) {
+    if (userTranslation.trim().length < minUserTrnsLen) {
       alert('Please write your translation!')
       return
     }
 
     setReviewLoading(true)
+    setReviewAnimationOpen(true)
     setTimerSt('stop')
-    
+
     try {
       const model = genAI!.getGenerativeModel({ model: 'gemini-2.5-flash' })
-      
+
       const prompt = `
         Read the following text in ${sourceLanguage.nativeName} (${sourceLanguage.code}):
         "${currentSourceText}"
@@ -173,11 +188,11 @@ function App(): React.ReactElement {
         - Write all text in English
         - Only respond in JSON format, no other explanations
       `
-      
+
       const result = await model.generateContent(prompt)
       const response = await result.response
       const text = response.text()
-      
+
       try {
         // Clean the response text to extract JSON
         const cleanedText = text.replace(/```json|```/g, '').trim()
@@ -191,6 +206,7 @@ function App(): React.ReactElement {
           parsedReview.score || 0, elapsedSec, { maxTime: 30, maxBonus: 0.5, minMultiplier: 0.6 })
 
         // Update total score and translation count using adjusted score
+        setAdjustedScore(adjusted)
         setTotalScore(prev => prev + adjusted)
         setTranslationCount(prev => prev + 1)
       } catch (parseError) {
@@ -206,7 +222,7 @@ function App(): React.ReactElement {
       setAiReview(null)
       setShowReview(false)
     }
-    
+
     setReviewLoading(false)
   }
 
@@ -232,13 +248,24 @@ function App(): React.ReactElement {
   if (isGameLoading) {
     return <GameLoading />
   }
-  
+
   return (
-    <main className={clsx([
-      'w-screen', 'h-screen', 'overflow-x-hidden', 'overflow-y-auto', 'px-4',
-      'bg-gradient-to-br', 'from-purple-200', 'via-pink-200', 'to-blue-200',
-      'sm:px-16',
-    ])}>
+    <motion.main
+      className={clsx([
+        'w-screen', 'h-screen', 'overflow-x-hidden', 'overflow-y-auto', 'px-4',
+        'bg-gradient-to-br', 'from-purple-200', 'via-pink-200', 'to-blue-200',
+        'sm:px-16',
+      ])}
+      initial={{ opacity: 0, y: -100 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1, ease: "easeInOut" }}
+    >
+      {/* Modals */}
+      {reviewAnimationOpen && <AIReviewAnimation
+        open={showReview}
+        onComplete={() => setReviewAnimationOpen(false)}
+      />}
+
       <header className='text-center'>
         <TranslationLogo />
       </header>
@@ -259,25 +286,25 @@ function App(): React.ReactElement {
           !(showReview || isGeneratingText || reviewLoading) ? 'block' : 'hidden'
         ])}
       />
-      <SourceTextSection
+      {!showReview && <SourceTextSection
         sourceText={isGeneratingText ? 'Generating Source Text...' : currentSourceText}
         onPaste={(text) => {
           setElapsedSec(0)
           setCurrentSourceText(text)
         }}
-      />
-      <TargetTextSection
+      />}
+      {!showReview && <TargetTextSection
         userTranslation={userTranslation}
         onChange={(text) => setUserTranslation(text)}
-      />
-      <motion.button
+      />}
+      {!showReview && <motion.button
         whileHover={
           (userTranslation.trim().length < 10 || showReview || reviewLoading) ? undefined
-          : { scale: 1.02 }
+            : { scale: 1.02 }
         }
         whileTap={
           (userTranslation.trim().length < 10 || showReview || reviewLoading) ? undefined
-          : { scale: 0.95 }
+            : { scale: 0.95 }
         }
         className={clsx([
           'flex', 'items-center', 'justify-center', 'gap-2',
@@ -300,15 +327,21 @@ function App(): React.ReactElement {
                 ⏳
               </motion.text> AI is working...
             </> :
-            <><Sparkles /> REVIEW</>
+            userTranslation.trim().length < minUserTrnsLen ?
+              <><PencilLine /> Write more to AI Review</> :
+              <><Sparkles /> REVIEW</>
         }
-      </motion.button>
+      </motion.button>}
       {showReview && aiReview &&
         <>
           <AIReviewSection
+            ref={aiReviewRef}
             score={aiReview.score}
             scoreText={aiReview.scoreText}
             timeSpent={elapsedSec || 0}
+            bonusFromTime={adjustedScore - aiReview.score}
+            userTranslation={userTranslation}
+            sourceText={currentSourceText}
             correctTranslation={aiReview.correctTranslation}
             grammarErrors={aiReview.grammarErrors}
             improvements={aiReview.improvements}
@@ -318,9 +351,9 @@ function App(): React.ReactElement {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             className={clsx([
-                'w-full', 'bg-gradient-to-r', 'from-green-400', 'to-blue-500',
-                'hover:from-green-500', 'hover:to-blue-600', 'text-white', 'rounded-2xl',
-                'py-4', 'mb-12', 'shadow-lg', 'transition-all', 'duration-300', 'hover:shadow-xl'
+              'w-full', 'bg-gradient-to-r', 'from-green-400', 'to-blue-500',
+              'hover:from-green-500', 'hover:to-blue-600', 'text-white', 'rounded-2xl',
+              'py-4', 'mb-12', 'shadow-lg', 'transition-all', 'duration-300', 'hover:shadow-xl'
             ])}
             onClick={handleNextTranslation}
           >
@@ -328,7 +361,7 @@ function App(): React.ReactElement {
           </motion.button>
         </>
       }
-    </main>
+    </motion.main>
   )
 }
 

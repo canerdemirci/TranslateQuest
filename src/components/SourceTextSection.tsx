@@ -22,7 +22,7 @@ export default function SourceTextSection(
                     <ClipboardPaste  />
                 </button>
             </div>
-            <p className='text-gray-800'>{sourceText}</p>
+            <p className='text-gray-800 text-xl'>{sourceText}</p>
         </section>
     )
 }
