@@ -13,6 +13,7 @@ import { formattedSeconds } from './utils/utils'
 import { PencilLine, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import AIReviewAnimation from './components/AIReviewAnimation'
+import TextGenerationAnimation from './components/TextGenerationAnimation'
 
 const minUserTrnsLen = 10
 
@@ -32,7 +33,7 @@ const getGeminiApiKey = async (): Promise<string | never> => {
 function App(): React.ReactElement {
   const [sourceLanguage, setSourceLanguage] = useState<Language>(SUPPORTED_LANGUAGES[0])
   const [targetLanguage, setTargetLanguage] = useState<Language>(SUPPORTED_LANGUAGES[1])
-  const [isGeneratingText, setIsGeneratingText] = useState<boolean>(true)
+  const [isGeneratingText, setIsGeneratingText] = useState<boolean>(false)
   const [isGameLoading, setIsGameLoading] = useState<boolean>(true)
   const [currentSourceText, setCurrentSourceText] = useState<string>('')
   const [userTranslation, setUserTranslation] = useState<string>('')
@@ -46,6 +47,7 @@ function App(): React.ReactElement {
   const [timerSt, setTimerSt] = useState<'play' | 'stop'>('stop')
   const [isAIReady, setIsAIReady] = useState<boolean>(false)
   const [reviewAnimationOpen, setReviewAnimationOpen] = useState<boolean>(false)
+  const [introAnimationComplete, setIntroAnimationComplete] = useState<boolean>(false)
 
   const aiReviewRef = useRef<HTMLElement | null>(null)
 
@@ -71,10 +73,10 @@ function App(): React.ReactElement {
 
   // Generate initial text when component mounts or language changes
   useEffect(() => {
-    if (isAIReady) {
+    if (isAIReady && introAnimationComplete) {
       generateSourceText()
     }
-  }, [sourceLanguage, isAIReady])
+  }, [sourceLanguage, isAIReady, introAnimationComplete])
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
@@ -136,10 +138,10 @@ function App(): React.ReactElement {
       console.error('Text generation error:', error)
       alert('Failed to generate source text. Please try again.')
       setCurrentSourceText('')
+    } finally {
+      setIsGeneratingText(false)
+      setTimerSt('play')
     }
-
-    setIsGeneratingText(false)
-    setTimerSt('play')
   }
 
   const handleSubmitTranslation = async (): Promise<void> => {
@@ -259,12 +261,17 @@ function App(): React.ReactElement {
       initial={{ opacity: 0, y: -100 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1, ease: "easeInOut" }}
+      onAnimationComplete={() => setIntroAnimationComplete(true)}
     >
-      {/* Modals */}
+      {/* ---*** Modals ***--- start --- */}
+      {/* Review is coming animation */}
       {reviewAnimationOpen && <AIReviewAnimation
         open={showReview}
         onComplete={() => setReviewAnimationOpen(false)}
       />}
+      {/* Text generating animation */}
+      <TextGenerationAnimation open={isGeneratingText} />
+      {/* ---*** Modals ***--- end --- */}
 
       <header className='text-center'>
         <TranslationLogo />

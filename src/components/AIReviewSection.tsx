@@ -1,6 +1,23 @@
 import clsx from "clsx"
 import { AlertCircle, ArrowDownUp, ArrowUpDown, Award, CheckCircle2, Clock, Lightbulb, ScrollText, Sparkles, Trophy, UserPen } from "lucide-react"
 import { formattedSeconds } from "../utils/utils"
+import { motion } from "motion/react"
+
+function AnimatedSection(
+    { delay, className, children } :
+    { delay: number, className: string, children: React.ReactNode }
+) {
+    return (
+        <motion.div
+            className={className}
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: 'easeOut', delay: delay }}
+        >
+            {children}
+        </motion.div>
+    )
+}
 
 export default function AIReviewSection(
     {
@@ -18,10 +35,15 @@ export default function AIReviewSection(
             'my-8', 'space-y-4', 'animate-in', 'fade-in', 'duration-500'
         ])}>
             {/* Score and Incentive Text */}
-            <div className="grid grid-cols-2 gap-4">
-                <div className={clsx([
+            <div
+                className={clsx([
+                    'flex', 'flex-col', 'gap-8',
+                    "md:grid", "md:grid-cols-2", "md:gap-4"
+                ])}
+            >
+                <AnimatedSection delay={0} className={clsx([
                     'bg-white/40', 'backdrop-blur-md', 'border', 'border-white/60',
-                    'rounded-2xl', 'p-4', 'shadow-lg'
+                    'rounded-2xl', 'p-4', 'shadow-lg',
                 ])}>
                     <div className="flex items-center gap-2 mb-4">
                         <Award className="w-5 h-5 text-purple-500" />
@@ -31,7 +53,10 @@ export default function AIReviewSection(
                         'bg-gradient-to-r', 'from-purple-600', 'to-pink-600', 'bg-clip-text',
                         'text-transparent'
                     ])}>
-                        <div className="flex items-center gap-6">
+                        <div className={clsx([
+                            "flex", "flex-col", "justify-start", "items-start", "gap-2",
+                            "xl:items-center", "xl:flex-row",  "xl:gap-6"
+                        ])}>
                             <div className="flex justify-center items-center gap-2">
                                 <Clock className="w-5 h-5 inline-block text-black"  />
                                 Time: <b>{formattedSeconds(timeSpent)}</b>
@@ -48,26 +73,26 @@ export default function AIReviewSection(
                         <br/>
                         <p>{scoreText}</p>
                     </div>
-                </div>
+                </AnimatedSection>
                 {/* Incentive Text */}
-                <div className={clsx([
+                <AnimatedSection delay={0.5} className={clsx([
                     'bg-gradient-to-r', 'from-purple-400/30', 'via-pink-400/30',
                     'to-blue-400/30', 'backdrop-blur-md', 'border', 'border-white/60',
-                    'rounded-2xl', 'shadow-lg', 'flex', 'flex-col', 'items-center',
+                    'rounded-2xl', 'shadow-lg', 'p-4', 'flex', 'flex-col', 'items-center',
                     'justify-center', 'gap-4'
                 ])}>
                     <Sparkles className="w-full h-5 text-purple-500 inline-block text-center" />
                     <p className="text-gray-600 italic font-bold text-center">
                         {incentiveText}
                     </p>
-                </div>
+                </AnimatedSection>
             </div>
             <div className={clsx([
                 'bg-white/10', 'backdrop-blur-md', 'border', 'border-white/60', 'rounded-2xl',
                 'p-5', 'shadow-lg', 'flex', 'flex-col', 'items-center', 'gap-4', 'my-10'
             ])}>
                 {/* Your Translation */}
-                <div className={clsx([
+                <AnimatedSection delay={1} className={clsx([
                     'bg-white/20', 'backdrop-blur-md', 'border', 'border-white/60', 'rounded-2xl',
                     'p-5', 'shadow-lg'
                 ])}>
@@ -78,10 +103,10 @@ export default function AIReviewSection(
                     <div className="text-gray-800">
                         {markDifferences(userTranslation, correctTranslation)}
                     </div>
-                </div>
+                </AnimatedSection>
                 <ArrowDownUp className="text-center w-full" />
                 {/* Source Text */}
-                <div className={clsx([
+                <AnimatedSection delay={1.5} className={clsx([
                     'bg-white/20', 'backdrop-blur-md', 'border', 'border-white/60', 'rounded-2xl',
                     'p-5', 'shadow-lg'
                 ])}>
@@ -90,10 +115,10 @@ export default function AIReviewSection(
                         <span className="text-sm text-gray-700">Source Text</span>
                     </div>
                     <p className="text-gray-800">{sourceText}</p>
-                </div>
+                </AnimatedSection>
                 <ArrowUpDown className="text-center w-full" />
                 {/* Correct Translation */}
-                <div className={clsx([
+                <AnimatedSection delay={2} className={clsx([
                     'bg-white/20', 'backdrop-blur-md', 'border', 'border-white/60', 'rounded-2xl',
                     'p-5', 'shadow-lg'
                 ])}>
@@ -104,11 +129,11 @@ export default function AIReviewSection(
                     <div className="text-gray-800">
                         {markDifferences(correctTranslation, userTranslation)}
                     </div>
-                </div>
+                </AnimatedSection>
             </div>
             {/* Grammar Errors */}
             {grammarErrors.length > 0 && (
-                <div className={clsx([
+                <AnimatedSection delay={2.5} className={clsx([
                     'bg-white/40', 'backdrop-blur-md', 'border', 'border-white/60',
                     'rounded-2xl', 'p-5', 'shadow-lg'
                 ])}>
@@ -126,11 +151,11 @@ export default function AIReviewSection(
                             </li>
                         ))}
                     </ul>
-                </div>
+                </AnimatedSection>
             )}
             {/* Improvements */}
             {improvements.length > 0 && (
-                <div className={clsx([
+                <AnimatedSection delay={3} className={clsx([
                     'bg-white/40', 'backdrop-blur-md', 'border', 'border-white/60',
                     'rounded-2xl', 'p-5', 'shadow-lg'
                 ])}>
@@ -146,7 +171,7 @@ export default function AIReviewSection(
                         </li>
                         ))}
                     </ul>
-                </div>
+                </AnimatedSection>
             )}
         </section>
     )

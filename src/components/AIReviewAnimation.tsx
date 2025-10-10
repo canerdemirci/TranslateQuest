@@ -177,7 +177,7 @@ export default function AIReviewAnimation(
                             exit={{ opacity: 0, y: -10 }}
                             className="m-4 text-center text-green-400 font-semibold"
                         >
-                            ✅ Review Almost Complete...
+                            ✅ Almost Complete, Please wait...
                             &nbsp;<span className="text-yellow-400">Good Luck !</span>
                         </motion.p>
                     )}
