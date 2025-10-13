@@ -389,12 +389,14 @@ function App(): React.ReactElement {
                 >
                   {
                     hintWords.map((w, i) =>
-                      <span
+                      <motion.span
                         key={i}
                         className='p-2 rounded-lg border border-purple-400 text-sm'
+                        animate={{ opacity: [0, 1] }}
+                        transition={{ duration: 0.5, ease: 'linear', delay: i * 0.3 }}
                       >
                         {w}
-                      </span>)
+                      </motion.span>)
                   }
                 </div>
           }
