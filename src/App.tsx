@@ -10,7 +10,7 @@ import { SUPPORTED_LANGUAGES } from './constants'
 import { useEffect, useRef, useState } from 'react'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { formattedSeconds } from './utils/utils'
-import { PencilLine, Sparkles } from 'lucide-react'
+import { Loader, PencilLine, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import AIReviewAnimation from './components/AIReviewAnimation'
 import TextGenerationAnimation from './components/TextGenerationAnimation'
@@ -51,6 +51,8 @@ function App(): React.ReactElement {
   const [confirmationBoxOpen, setConfirmationBoxOpen] = useState<boolean>(false)
   const [confirmationBoxText, setConfirmationBoxText] = useState<string>('')
   const [pasteText, setPasteText] = useState<string>('')
+  const [showHelp, setShowHelp] = useState<boolean>(false)
+  const [hintWords, setHintWords] = useState<string[]>([])
 
   const aiReviewRef = useRef<HTMLElement | null>(null)
 
@@ -147,6 +149,40 @@ function App(): React.ReactElement {
     }
   }
 
+  const generateWords = async (): Promise<void> => {
+    const prompt = `Translate the text that I will give you from ${sourceLanguage.name} 
+      (${sourceLanguage.code}) to ${targetLanguage.name} (${targetLanguage.code}) and output key  
+      words of your translation as an array in json format like this:
+      {
+        words: ['word1', 'word2']
+      }
+      Rules:
+        - Only respond in JSON format, no other explanations
+      Text: ${currentSourceText}
+    `
+    try {
+      const model = genAI!.getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const result = await model.generateContent(prompt)
+      const response = result.response
+      const text = response.text()
+      try {
+        const cleanedText = text.replace(/```json|```/g, '').trim()
+        const words = JSON.parse(cleanedText).words as string[]
+      
+        // Set and shuffle the array
+        setHintWords(words.sort(() => Math.random() - 0.5))
+      } catch (parseError) {
+        console.error('JSON parse hatası:', parseError)
+        alert('AI response could not be parsed.')
+        setHintWords([])
+      }
+    } catch (error) {
+      console.error('Text generation error:', error)
+      alert('Failed to generate source text. Please try again.')
+      setHintWords([])
+    }
+  }
+
   const handleSubmitTranslation = async (): Promise<void> => {
     if (userTranslation.trim().length < minUserTrnsLen) {
       alert('Please write your translation!')
@@ -194,7 +230,7 @@ function App(): React.ReactElement {
       `
 
       const result = await model.generateContent(prompt)
-      const response = await result.response
+      const response = result.response
       const text = response.text()
 
       try {
@@ -239,6 +275,11 @@ function App(): React.ReactElement {
   function handlePasteText(text: string) {
     setCurrentSourceText(text)
     setElapsedSec(0)
+  }
+
+  function handleHelpButton() {
+    setShowHelp(true)
+    generateWords()
   }
 
   // Score multiplier function (linear decay)
@@ -318,11 +359,52 @@ function App(): React.ReactElement {
             alert('Your text must be 150 characters long at least!')
           }
         }}
+        onHelp={handleHelpButton}
       />}
+      {/* Help Section */}
+      {showHelp && <motion.div
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, ease: 'easeInOut' }}
+      >
+        <section className={clsx([
+          'bg-white/40', 'backdrop-blur-md', 'border', 'border-white/60',
+          'rounded-3xl', 'p-8', 'shadow-lg', 'mb-6'
+        ])}>
+          {
+            hintWords.length < 1 ?
+              <motion.div
+                className='origin-center w-8 h-8 m-auto'
+                animate={{ rotate: [0, 360], opacity: [0.3, 1, 0.3], scale: [0.7, 1, 0.7] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', repeatType: 'loop' }}
+              >
+                <Loader className='w-8 h-8' />
+              </motion.div>
+              : <div
+                  className={clsx([
+                    'flex', 'flex-wrap', 'items-center', 'justify-start', 'gap-2',
+                    'bg-gradient-to-r', 'from-purple-500', 'via-pink-500',
+                    'to-blue-500', 'bg-clip-text', 'text-transparent'
+                  ])}
+                >
+                  {
+                    hintWords.map((w, i) =>
+                      <span
+                        key={i}
+                        className='p-2 rounded-lg border border-purple-400 text-sm'
+                      >
+                        {w}
+                      </span>)
+                  }
+                </div>
+          }
+        </section>
+      </motion.div>}
       {!showReview && <TargetTextSection
         userTranslation={userTranslation}
         onChange={(text) => setUserTranslation(text)}
       />}
+      {/* AI Review Button */}
       {!showReview && <motion.button
         whileHover={
           (userTranslation.trim().length < 10 || showReview || reviewLoading) ? undefined
@@ -337,7 +419,7 @@ function App(): React.ReactElement {
           'w-full', 'bg-gradient-to-r', 'from-purple-500', 'via-pink-500', 'to-blue-500',
           'hover:from-purple-600', 'hover:via-pink-600', 'hover:to-blue-600', 'text-white',
           'rounded-2xl', 'py-4', 'shadow-lg', 'transition-all', 'duration-300', 'hover:shadow-xl',
-          'disabled:opacity-60', 'disabled:text-gray-200', 'mb-4'
+          'disabled:opacity-60', 'disabled:text-gray-200', 'mb-16', 'mt-10'
         ])}
         disabled={userTranslation.trim().length < 10 || showReview || reviewLoading}
         onClick={handleSubmitTranslation}
@@ -379,7 +461,8 @@ function App(): React.ReactElement {
             className={clsx([
               'w-full', 'bg-gradient-to-r', 'from-green-400', 'to-blue-500',
               'hover:from-green-500', 'hover:to-blue-600', 'text-white', 'rounded-2xl',
-              'py-4', 'mb-12', 'shadow-lg', 'transition-all', 'duration-300', 'hover:shadow-xl'
+              'py-4', 'shadow-lg', 'transition-all', 'duration-300', 'hover:shadow-xl',
+              'mb-16', 'mt-2'
             ])}
             onClick={handleNextTranslation}
           >

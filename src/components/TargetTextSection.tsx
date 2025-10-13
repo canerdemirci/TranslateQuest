@@ -10,7 +10,7 @@ export default function TargetTextSection(
             'bg-white/40', 'backdrop-blur-md', 'border', 'border-white/60',
             'rounded-3xl', 'p-8', 'shadow-lg', 'mb-6'
         ])}>
-          <h3 className='text-sm text-gray-600 mb-3'>Your Translation</h3>
+          <h3 className='text-lg font-bold text-gray-500 mb-3'>Your Translation</h3>
             <Textarea
                 value={userTranslation}
                 placeholder="Type your translation here..."
