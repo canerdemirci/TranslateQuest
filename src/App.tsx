@@ -152,7 +152,7 @@ function App(): React.ReactElement {
   const generateWords = async (): Promise<void> => {
     const prompt = `Translate the text that I will give you from ${sourceLanguage.name} 
       (${sourceLanguage.code}) to ${targetLanguage.name} (${targetLanguage.code}) and output key  
-      words of your translation as an array in json format like this:
+      words and a few collocations of your translation as an array in json format like this:
       {
         words: ['word1', 'word2']
       }
