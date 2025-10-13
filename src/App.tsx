@@ -14,6 +14,7 @@ import { PencilLine, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import AIReviewAnimation from './components/AIReviewAnimation'
 import TextGenerationAnimation from './components/TextGenerationAnimation'
+import ConfirmationBox from './components/ConfirmationBox'
 
 const minUserTrnsLen = 10
 
@@ -46,8 +47,10 @@ function App(): React.ReactElement {
   const [elapsedSec, setElapsedSec] = useState<number>(0)
   const [timerSt, setTimerSt] = useState<'play' | 'stop'>('stop')
   const [isAIReady, setIsAIReady] = useState<boolean>(false)
-  const [reviewAnimationOpen, setReviewAnimationOpen] = useState<boolean>(false)
   const [introAnimationComplete, setIntroAnimationComplete] = useState<boolean>(false)
+  const [confirmationBoxOpen, setConfirmationBoxOpen] = useState<boolean>(false)
+  const [confirmationBoxText, setConfirmationBoxText] = useState<string>('')
+  const [pasteText, setPasteText] = useState<string>('')
 
   const aiReviewRef = useRef<HTMLElement | null>(null)
 
@@ -151,7 +154,6 @@ function App(): React.ReactElement {
     }
 
     setReviewLoading(true)
-    setReviewAnimationOpen(true)
     setTimerSt('stop')
 
     try {
@@ -234,6 +236,11 @@ function App(): React.ReactElement {
     await generateSourceText()
   }
 
+  function handlePasteText(text: string) {
+    setCurrentSourceText(text)
+    setElapsedSec(0)
+  }
+
   // Score multiplier function (linear decay)
   function computeScoreWithTimeMultiplier(basePoints: number, timeTakenSec: number, {
     maxTime = 30,
@@ -265,12 +272,18 @@ function App(): React.ReactElement {
     >
       {/* ---*** Modals ***--- start --- */}
       {/* Review is coming animation */}
-      {reviewAnimationOpen && <AIReviewAnimation
-        open={showReview}
-        onComplete={() => setReviewAnimationOpen(false)}
-      />}
+      <AIReviewAnimation open={reviewLoading} />
       {/* Text generating animation */}
       <TextGenerationAnimation open={isGeneratingText} />
+      {/* Confirmation Dialog */}
+      <ConfirmationBox
+        open={confirmationBoxOpen}
+        text={confirmationBoxText}
+        onClose={(choice) => {
+          if (choice === 'yes') handlePasteText(pasteText)
+          setConfirmationBoxOpen(false)
+        }}
+      />
       {/* ---*** Modals ***--- end --- */}
 
       <header className='text-center'>
@@ -296,8 +309,14 @@ function App(): React.ReactElement {
       {!showReview && <SourceTextSection
         sourceText={isGeneratingText ? 'Generating Source Text...' : currentSourceText}
         onPaste={(text) => {
-          setElapsedSec(0)
-          setCurrentSourceText(text)
+          if (text.length > 150) {
+            setConfirmationBoxOpen(true)
+            setConfirmationBoxText(
+              "You will paste a text for translation instead of AI generated text. Are you sure?")
+            setPasteText(text)
+          } else {
+            alert('Your text must be 150 characters long at least!')
+          }
         }}
       />}
       {!showReview && <TargetTextSection
