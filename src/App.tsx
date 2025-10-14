@@ -362,7 +362,7 @@ function App(): React.ReactElement {
         onHelp={handleHelpButton}
       />}
       {/* Help Section */}
-      {showHelp && <motion.div
+      {(showHelp && !showReview) && <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeInOut' }}
@@ -382,21 +382,20 @@ function App(): React.ReactElement {
               </motion.div>
               : <div
                   className={clsx([
-                    'flex', 'flex-wrap', 'items-center', 'justify-start', 'gap-2',
-                    'bg-gradient-to-r', 'from-purple-500', 'via-pink-500',
-                    'to-blue-500', 'bg-clip-text', 'text-transparent'
+                    'flex', 'flex-wrap', 'items-center', 'justify-start', 'gap-8'
                   ])}
                 >
                   {
                     hintWords.map((w, i) =>
-                      <motion.span
+                      <motion.div
                         key={i}
-                        className='p-2 rounded-lg border border-purple-400 text-sm'
+                        className='text-sm text-pink-600 flex justify-center items-center'
                         animate={{ opacity: [0, 1] }}
                         transition={{ duration: 0.5, ease: 'linear', delay: i * 0.3 }}
                       >
-                        {w}
-                      </motion.span>)
+                        <Sparkles className='w-4 h-4 text-purple-600' />
+                        <span className='ml-2 italic'>{w}</span>
+                      </motion.div>)
                   }
                 </div>
           }

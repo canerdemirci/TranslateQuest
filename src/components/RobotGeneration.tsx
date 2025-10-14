@@ -45,37 +45,31 @@ const RobotGeneration: React.FC = () => {
                     animate={{ y: [0, -5, 0] }}
                     transition={{ repeat: Infinity, duration: 1.5 }}
                 />
-                <motion.circle
-                    cx="100"
-                    cy="40"
-                    r="8"
-                    fill="#ffb703"
+                <motion.g
                     animate={{ scale: [1, 1.3, 1] }}
                     transition={{ repeat: Infinity, duration: 1.2 }}
-                />
+                >
+                    <circle cx="100" cy="40" r="8" fill="#ffb703" />
+                </motion.g>
 
                 {/* Eyes */}
                 <g>
-                    <motion.circle
-                        cx="75"
-                        cy="100"
-                        r="12"
-                        fill="#03045e"
-                        animate={{ cy: [100, 102, 100] }}
+                    <motion.g
+                        animate={{ y: [0, 2, 0] }}
                         transition={{ repeat: Infinity, duration: 2 }}
-                    />
-                    <circle cx="70" cy="95" r="4" fill="#caf0f8" />
+                    >
+                        <circle cx="75" cy="100" r="12" fill="#03045e" />
+                        <circle cx="70" cy="95" r="4" fill="#caf0f8" />
+                    </motion.g>
                 </g>
                 <g>
-                    <motion.circle
-                        cx="125"
-                        cy="100"
-                        r="12"
-                        fill="#03045e"
-                        animate={{ cy: [100, 102, 100] }}
+                    <motion.g
+                        animate={{ y: [0, 2, 0] }}
                         transition={{ repeat: Infinity, duration: 2, delay: 0.2 }}
-                    />
-                    <circle cx="120" cy="95" r="4" fill="#caf0f8" />
+                    >
+                        <circle cx="125" cy="100" r="12" fill="#03045e" />
+                        <circle cx="120" cy="95" r="4" fill="#caf0f8" />
+                    </motion.g>
                 </g>
 
                 {/* Mouth typing effect */}
@@ -121,9 +115,9 @@ const RobotGeneration: React.FC = () => {
                     color: "#fff",
                     textAlign: "center",
                 }}
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ repeat: Infinity, duration: 3 }}
+                initial={{ opacity: 0.7 }}
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ repeat: Infinity, duration: 1 }}
             >
                 AI is generating a text...
             </motion.div>

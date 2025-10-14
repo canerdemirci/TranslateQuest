@@ -153,9 +153,9 @@ const RobotReview: React.FC = () => {
                     color: "#fff",
                     textAlign: "center",
                 }}
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ repeat: Infinity, duration: 3 }}
+                initial={{ opacity: 0.7 }}
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ repeat: Infinity, duration: 1 }}
             >
                 AI is reviewing your translation...
             </motion.div>
