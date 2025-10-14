@@ -192,6 +192,8 @@ function App(): React.ReactElement {
     }
 
     setReviewLoading(true)
+    setShowHelp(false)
+    setHintWords([])
     setTimerSt('stop')
 
     try {
@@ -340,10 +342,14 @@ function App(): React.ReactElement {
       <LanguageSelectionSection
         languages={SUPPORTED_LANGUAGES}
         onChange={(source, target) => {
-          setElapsedSec(0)
-          setTimerSt('stop')
-          setSourceLanguage(source)
+          if (source.code !== sourceLanguage.code) {
+            setSourceLanguage(source)
+            setElapsedSec(0)
+            setTimerSt('stop')
+          }
           setTargetLanguage(target)
+          setShowHelp(false)
+          setHintWords([])
         }}
         className={clsx([
           !(showReview || isGeneratingText || reviewLoading) ? 'block' : 'hidden'
@@ -364,7 +370,7 @@ function App(): React.ReactElement {
         onHelp={handleHelpButton}
       />}
       {/* Help Section */}
-      {(showHelp && !showReview) && <motion.div
+      {showHelp && <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeInOut' }}
