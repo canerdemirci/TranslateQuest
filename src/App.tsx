@@ -150,9 +150,11 @@ function App(): React.ReactElement {
   }
 
   const generateWords = async (): Promise<void> => {
-    const prompt = `Translate the text that I will give you from ${sourceLanguage.name} 
-      (${sourceLanguage.code}) to ${targetLanguage.name} (${targetLanguage.code}) and output key  
-      words and a few collocations of your translation as an array in json format like this:
+    const prompt = `Examine the text that I will give you. A user in my app will try to translate 
+      it from ${sourceLanguage.name} ($${sourceLanguage.code}) language to 
+      ${sourceLanguage.name} (${sourceLanguage.code}) language. Output words or collocations in 
+      ${targetLanguage.name} (${targetLanguage.code}) that can serve as clues for the user. 
+      Json format:
       {
         words: ['word1', 'word2']
       }
