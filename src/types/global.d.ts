@@ -15,4 +15,6 @@ declare global {
         correctTranslation: string
         encouragement: string
     }
+
+    type AIResponse = { aiResponse?: string, error?: string }
 }
