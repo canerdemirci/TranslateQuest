@@ -25,7 +25,7 @@ export default function TextGenerationAnimation(
         }
     }, [open])
 
-    if (isClosed) return null
+    if (isClosed || (!open && !isClosed))  return null
 
     return (
         <Modal>

@@ -30,7 +30,7 @@ export default function ConfirmationBox(
         onClose(choice)
     }
 
-    if (isClosed) return null
+    if (isClosed || (!open && !isClosed)) return null
 
     return (
         <Modal>

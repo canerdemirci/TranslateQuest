@@ -1,4 +1,3 @@
-import clsx from 'clsx'
 import TranslationLogo from './components/TranslationLogo'
 import ScoreSection from './components/ScoreSection'
 import LanguageSelectionSection from './components/LanguageSelectionSection'
@@ -6,14 +5,15 @@ import SourceTextSection from './components/SourceTextSection'
 import TargetTextSection from './components/TargetTextSection'
 import AIReviewSection from './components/AIReviewSection'
 import GameLoading from './components/GameLoading'
+import AIReviewAnimation from './components/AIReviewAnimation'
+import TextGenerationAnimation from './components/TextGenerationAnimation'
+import ConfirmationBox from './components/ConfirmationBox'
+import clsx from 'clsx'
 import { SUPPORTED_LANGUAGES } from './constants'
 import { useEffect, useRef, useState } from 'react'
 import gemini, { formattedSeconds } from './utils/utils'
 import { Loader, PencilLine, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
-import AIReviewAnimation from './components/AIReviewAnimation'
-import TextGenerationAnimation from './components/TextGenerationAnimation'
-import ConfirmationBox from './components/ConfirmationBox'
 
 const minUserTrnsLen = 10
 
@@ -148,9 +148,9 @@ function App(): React.ReactElement {
   const [sourceLanguage, setSourceLanguage] = useState<Language>(SUPPORTED_LANGUAGES[0])
   const [targetLanguage, setTargetLanguage] = useState<Language>(SUPPORTED_LANGUAGES[1])
   const [isGeneratingText, setIsGeneratingText] = useState<boolean>(false)
-  const [isGameLoading, setIsGameLoading] = useState<boolean>(true)
   const [currentSourceText, setCurrentSourceText] = useState<string>('')
   const [sourceTextGenerationError, setSourceTextGenerationError] = useState<boolean>(false)
+  const [isGameLoading, setIsGameLoading] = useState<boolean>(true)
   const [userTranslation, setUserTranslation] = useState<string>('')
   const [aiReview, setAiReview] = useState<AIReview | null>(null)
   const [showReview, setShowReview] = useState<boolean>(false)
