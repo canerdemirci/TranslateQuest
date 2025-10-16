@@ -40,6 +40,7 @@ Example:
 
 ### 🔒 Using Vercel Serverless Functions to Protect Gemini API Key
 To prevent exposing your Gemini API key, API requests are handled securely through **Vercel Functions.**
+**To use vercel functions in localhost**: install `@vercel/node` package and command `vercel dev` instead of `npm run dev`
 **Steps:**
 1. Create an `api` folder in your project root (outside the `src` directory).
 2. Inside it, create a file named `gemini.ts.`
